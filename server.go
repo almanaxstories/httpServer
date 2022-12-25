@@ -29,26 +29,10 @@ func serveIndexPage(w http.ResponseWriter, r *http.Request) {
 		}
 
 		fmt.Println("POST catched successfully!")
-		/*fmt.Fprintf(w, "Post from website! r.PostFrom = %v\n", r.PostForm)
 		firstName := r.FormValue("fNameText")
 		lastName := r.FormValue("lNameText")
-		//test := r.FormValue()
-		fmt.Fprintf(w, "Name = %s\n", firstName)
-		fmt.Fprintf(w, "Address = %s\n", lastName)*/
+		fmt.Println("User's first name is ", firstName)
+		fmt.Println("User's last name is ", lastName)
+		fileServer.ServeHTTP(w, r)
 	}
-
-	//case "POST":
-	//  if err := r.ParseForm(); err != nil {
-	//    fmt.Fprintf(w, "ParseForm() err: %v", err)
-	//    return
-	//  }
-	//  fmt.Fprintf(w, "Post from website! r.PostFrom = %v\n", r.PostForm)
-	//  name := r.FormValue("name")
-	//  address := r.FormValue("address")
-	//  fmt.Fprintf(w, "Name = %s\n", name)
-	//  fmt.Fprintf(w, "Address = %s\n", address)
-	//default:
-	//  fmt.Fprintf(w, "Sorry, only GET and POST methods are supported.")
-	//}
-
 }
