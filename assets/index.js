@@ -16,10 +16,10 @@ signupForm.append(lastNameLabel);
 let lastNameInput = newElement("input", "text", "", "", "lNameText");
 lastNameInput.setAttribute("name","lNameText");
 signupForm.append(lastNameInput);
-let submitButton = newElement("input", "submit", "Let's go!", "", "submitButton");
+let submitButton = newElement("input", "button", "Let's go!", "", "submitButton");
 signupForm.append(submitButton);
 
-signupForm.addEventListener('submit', event => {
+submitButton.addEventListener('click', event => {
     event.preventDefault();
     const formData = new FormData(signupForm);
     const objectFromInputs = Object.fromEntries(formData);
@@ -31,8 +31,8 @@ signupForm.addEventListener('submit', event => {
             'Accept': 'application/json'
         },
         body: JSON.stringify(objectFromInputs)
-    });
-    //.then(res => res.json()).then(data => console.log(data)).catch(err => console.log(err))
+    }).then(res => res.json()).then(data => console.log(data)).catch(err => console.log(err));
+    //
 
 });
 });

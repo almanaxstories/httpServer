@@ -20,7 +20,7 @@ func main() {
 }
 
 func serveIndexPage(w http.ResponseWriter, r *http.Request) {
-	log.Printf("method %s, path: %s\n", r.Method, r.URL.Path)
+	//log.Printf("method %s, path: %s\n", r.Method, r.URL.Path)
 	if r.Method == http.MethodGet {
 		fileServer.ServeHTTP(w, r)
 		return
@@ -29,11 +29,18 @@ func serveIndexPage(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, "ParseForm() err: %v", err)
 			return
 		}
-		fmt.Println(r.Body)
-		byteValue, _ := ioutil.ReadAll(r.Body)
+		//fmt.Println(r.Body)
+		byteValue, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			fmt.Println(err)
+		}
+		w.Write(byteValue)
 
 		var result map[string]interface{}
-		json.Unmarshal([]byte(byteValue), &result)
+		err = json.Unmarshal([]byte(byteValue), &result)
+		if err != nil {
+			log.Fatal(err)
+		}
 
 		fmt.Println("User's first name is:", result["fNameText"])
 		fmt.Println("User's last name is:", result["lNameText"])
