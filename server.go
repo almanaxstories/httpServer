@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 )
@@ -27,12 +29,15 @@ func serveIndexPage(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, "ParseForm() err: %v", err)
 			return
 		}
+		fmt.Println(r.Body)
+		byteValue, _ := ioutil.ReadAll(r.Body)
 
-		fmt.Println("POST catched successfully!")
-		firstName := r.FormValue("fNameText")
-		lastName := r.FormValue("lNameText")
-		fmt.Println("User's first name is ", firstName)
-		fmt.Println("User's last name is ", lastName)
-		fileServer.ServeHTTP(w, r)
+		var result map[string]interface{}
+		json.Unmarshal([]byte(byteValue), &result)
+
+		fmt.Println("User's first name is:", result["fNameText"])
+		fmt.Println("User's last name is:", result["lNameText"])
+		//fileServer.ServeHTTP(w, r)
+
 	}
 }

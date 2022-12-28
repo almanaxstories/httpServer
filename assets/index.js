@@ -4,6 +4,7 @@ window.addEventListener('load', ()=>{
 let appContainer = document.getElementById('signupFormDiv');
 let signupForm = newElement('FORM');
 signupForm.method = 'POST';
+signupForm.setAttribute('class', 'form');
 appContainer.append(signupForm);
 let firstNameLabel = newElement("label", "", "First Name:", "fNameText", "fNameLabel");
 signupForm.append(firstNameLabel);
@@ -18,8 +19,23 @@ signupForm.append(lastNameInput);
 let submitButton = newElement("input", "submit", "Let's go!", "", "submitButton");
 signupForm.append(submitButton);
 
-})
+signupForm.addEventListener('submit', event => {
+    event.preventDefault();
+    const formData = new FormData(signupForm);
+    const objectFromInputs = Object.fromEntries(formData);
 
+    fetch('http://localhost:8090/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify(objectFromInputs)
+    });
+    //.then(res => res.json()).then(data => console.log(data)).catch(err => console.log(err))
+
+});
+});
 
 function newElement(tag, typeOfInput, text, labelFor, id){
     let element = document.createElement(tag);
@@ -41,3 +57,4 @@ function newElement(tag, typeOfInput, text, labelFor, id){
     }    
     return element;
 }
+
