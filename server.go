@@ -5,10 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
-	"os"
 
+	//"github.com/golang-migrate/migrate/v4"
+	//_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	//_ "github.com/golang-migrate/migrate/v4/source/github"
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
@@ -19,7 +20,7 @@ func main() {
 	http.HandleFunc("/", serveIndexPage)
 
 	if err := http.ListenAndServe(":8090", nil); err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 	}
 }
 
@@ -43,22 +44,25 @@ func serveIndexPage(w http.ResponseWriter, r *http.Request) {
 		var result map[string]interface{}
 		err = json.Unmarshal([]byte(byteValue), &result)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
 		}
 
 		fmt.Println("User's first name is:", result["fNameText"])
 		fmt.Println("User's last name is:", result["lNameText"])
 
 		//os.Getenv("DATABASE_URL")
-		dbURL := "postgres://arcantar:2244foxtrot@localhost:5432/arcantar"
+		dbURL := "postgres://admin:qwert@127.0.0.1:2023/usersInfoDB"
 		db, err := sql.Open("pgx", dbURL)
 		if err != nil {
 			fmt.Println(err)
-			os.Exit(1)
 		} else {
 			fmt.Println("Successfully connected to DB")
 		}
-
+		err = db.Ping()
+		if err != nil {
+			fmt.Printf("Ping to db failed, %s", err.Error())
+		}
+		//initDB(db)
 		insertUserIntoDB(db, fmt.Sprint(result["fNameText"]), fmt.Sprint(result["lNameText"]))
 		getUsersInfoFromDB(db)
 		db.Close()
@@ -74,18 +78,18 @@ func getUsersInfoFromDB(db *sql.DB) {
 
 	rows, err := db.Query("SELECT * from usersinfo")
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 	}
 	for rows.Next() {
 		err := rows.Scan(&uid, &ufname, &ulname)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
 		}
 		fmt.Println(uid, ufname, ulname)
 	}
 	err = rows.Err()
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 	}
 	rows.Close()
 }
@@ -93,11 +97,25 @@ func getUsersInfoFromDB(db *sql.DB) {
 func insertUserIntoDB(db *sql.DB, ufname string, ulname string) {
 	insert, insertErr := db.Prepare("INSERT INTO usersinfo (ufname, ulname) VALUES ($1, $2)")
 	if insertErr != nil {
-		log.Fatal(insertErr)
+		fmt.Println(insertErr)
 	}
 	_, err := insert.Exec(ufname, ulname)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+	} else {
+		fmt.Println("You have successfully added new user's info to database!")
+	}
+	insert.Close()
+}
+
+func initDB(db *sql.DB) {
+	insert, insertErr := db.Prepare("CREATE TABLE usersinfo ALTER TABLE usersinfo ADD COLUMN Id SERIAL PRIMARY KEY, ufname VARCHAR(50) NOT NULL, ulname VARCHAR(50) NOT NULL")
+	if insertErr != nil {
+		fmt.Println(insertErr)
+	}
+	_, err := insert.Exec()
+	if err != nil {
+		fmt.Println(err)
 	} else {
 		fmt.Println("You have successfully added new user's info to database!")
 	}
