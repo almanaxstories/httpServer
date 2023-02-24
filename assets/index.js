@@ -24,7 +24,7 @@ submitButton.addEventListener('click', event => {
     const formData = new FormData(signupForm);
     const objectFromInputs = Object.fromEntries(formData);
 
-    fetch('http://localhost:8090/', {
+    fetch('http://0.0.0.0:8090/', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

@@ -7,9 +7,6 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	//"github.com/golang-migrate/migrate/v4"
-	//_ "github.com/golang-migrate/migrate/v4/database/postgres"
-	//_ "github.com/golang-migrate/migrate/v4/source/github"
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
@@ -18,14 +15,16 @@ var fileServer = http.FileServer(http.Dir("./assets"))
 func main() {
 
 	http.HandleFunc("/", serveIndexPage)
-
-	if err := http.ListenAndServe(":8090", nil); err != nil {
+	fmt.Println("Starting web server")
+	if err := http.ListenAndServe("0.0.0.0:8090", nil); err != nil {
 		fmt.Println(err)
 	}
 }
 
 func serveIndexPage(w http.ResponseWriter, r *http.Request) {
-	//log.Printf("method %s, path: %s\n", r.Method, r.URL.Path)
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 	if r.Method == http.MethodGet {
 		fileServer.ServeHTTP(w, r)
 		return
@@ -34,7 +33,6 @@ func serveIndexPage(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, "ParseForm() err: %v", err)
 			return
 		}
-		//fmt.Println(r.Body)
 		byteValue, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			fmt.Println(err)
@@ -50,8 +48,7 @@ func serveIndexPage(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("User's first name is:", result["fNameText"])
 		fmt.Println("User's last name is:", result["lNameText"])
 
-		//os.Getenv("DATABASE_URL")
-		dbURL := "postgres://admin:qwert@127.0.0.1:2023/usersInfoDB"
+		dbURL := "postgres://user:qwert@pgdb:5432/usersList?sslmode=disable"
 		db, err := sql.Open("pgx", dbURL)
 		if err != nil {
 			fmt.Println(err)
@@ -60,9 +57,8 @@ func serveIndexPage(w http.ResponseWriter, r *http.Request) {
 		}
 		err = db.Ping()
 		if err != nil {
-			fmt.Printf("Ping to db failed, %s", err.Error())
+			fmt.Printf("Conection to db failed, %s", err.Error())
 		}
-		//initDB(db)
 		insertUserIntoDB(db, fmt.Sprint(result["fNameText"]), fmt.Sprint(result["lNameText"]))
 		getUsersInfoFromDB(db)
 		db.Close()
@@ -100,20 +96,6 @@ func insertUserIntoDB(db *sql.DB, ufname string, ulname string) {
 		fmt.Println(insertErr)
 	}
 	_, err := insert.Exec(ufname, ulname)
-	if err != nil {
-		fmt.Println(err)
-	} else {
-		fmt.Println("You have successfully added new user's info to database!")
-	}
-	insert.Close()
-}
-
-func initDB(db *sql.DB) {
-	insert, insertErr := db.Prepare("CREATE TABLE usersinfo ALTER TABLE usersinfo ADD COLUMN Id SERIAL PRIMARY KEY, ufname VARCHAR(50) NOT NULL, ulname VARCHAR(50) NOT NULL")
-	if insertErr != nil {
-		fmt.Println(insertErr)
-	}
-	_, err := insert.Exec()
 	if err != nil {
 		fmt.Println(err)
 	} else {
